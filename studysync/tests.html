@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudySync &mdash; Automated Test Runner</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310b981'><path d='M22 11.08V12a10 10 0 1 1-5.93-9.14'/><polyline points='22 4 12 14.01 9 11.01'/></svg>">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      margin: 0;
+      padding: 2rem;
+    }
+    .test-box {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #1e293b;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      border: 1px solid #334155;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+    .badge-success { background: #065f46; color: #a7f3d0; }
+    .badge-danger { background: #991b1b; color: #fecaca; }
+    pre {
+      background: #090d16;
+      border: 1px solid #1e293b;
+      padding: 1.25rem;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: #38bdf8;
+    }
+    .pass-line { color: #34d399; }
+    .fail-line { color: #f87171; }
+    a {
+      color: #818cf8;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="test-box">
+    <h1>
+      StudySync Automated Test Suite
+    </h1>
+    <p>Verification tests for CRUD operations, date math, input validation, localStorage persistence, and filter logic.</p>
+    <div id="results">Running test suite in headless/browser environment...</div>
+    <p style="margin-top: 1.5rem;">
+      &larr; <a href="index.html">Back to StudySync App</a>
+    </p>
+  </div>
+
+  <!-- Hidden DOM mocks required by script.js -->
+  <div style="display:none;" aria-hidden="true">
+    <span id="currentDateDisplay"></span>
+    <button id="loadSampleBtn"></button>
+    <button id="clearCompletedBtn"></button>
+    <span id="totalTasksCount"></span>
+    <span id="pendingTasksCount"></span>
+    <span id="completedTasksCount"></span>
+    <span id="overdueTasksCount"></span>
+    <div id="overdueCard"></div>
+    <span id="progressPercentage"></span>
+    <div id="progressBar"></div>
+    <div id="progressFill"></div>
+    <span id="filterCountAll"></span>
+    <span id="filterCountPending"></span>
+    <span id="filterCountCompleted"></span>
+    <div class="filter-tab" data-filter="all"></div>
+    <div class="filter-tab" data-filter="pending"></div>
+    <div class="filter-tab" data-filter="completed"></div>
+    <input id="searchInput">
+    <button id="clearSearchBtn"></button>
+    <select id="sortSelect">
+      <option value="due-asc">Due Date (Earliest)</option>
+    </select>
+    <ul id="taskList"></ul>
+    <div id="emptyState"></div>
+    <h3 id="emptyStateTitle"></h3>
+    <p id="emptyStateText"></p>
+    <button id="emptyStateActionBtn"></button>
+    <div id="toastContainer"></div>
+    <div id="deleteModal" style="display:none;"></div>
+    <p id="modalMessage"></p>
+    <button id="modalCloseBtn"></button>
+    <button id="modalCancelBtn"></button>
+    <button id="modalConfirmBtn"></button>
+
+    <form id="taskForm">
+      <input type="text" id="taskTitle">
+      <div id="titleError"></div>
+      <input type="text" id="taskSubject">
+      <div id="subjectError"></div>
+      <input type="date" id="taskDueDate">
+      <div id="dateError"></div>
+      <select id="taskPriority">
+        <option value="low">Low</option>
+        <option value="medium">Medium</option>
+        <option value="high">High</option>
+      </select>
+      <button type="submit" id="submitTaskBtn">Add</button>
+    </form>
+
+    <!-- AI Study Assistant Mock DOM -->
+    <button id="viewPlannerBtn"></button>
+    <button id="viewAssistantBtn"></button>
+    <div id="plannerView"></div>
+    <div id="assistantView" style="display:none;"></div>
+    <form id="aiPlanForm"></form>
+    <input id="aiTopicInput">
+    <input id="aiTimeInput">
+    <select id="aiDifficultySelect">
+      <option value="Beginner">Beginner</option>
+      <option value="Intermediate" selected>Intermediate</option>
+      <option value="Advanced">Advanced</option>
+    </select>
+    <div id="aiTopicError"></div>
+    <div id="aiTimeError"></div>
+    <button id="aiGenerateBtn"></button>
+    <span id="aiBtnText"></span>
+    <div id="aiLoadingSkeleton" style="display:none;"></div>
+    <div id="aiResultsContainer" style="display:none;"></div>
+    <div id="aiSourceBanner"></div>
+    <div id="aiStatusBadge"></div>
+    <span id="aiStatusText"></span>
+    <span id="aiModeNotice"></span>
+    <button id="openApiHelpBtn"></button>
+    <div id="apiHelpModal" style="display:none;"></div>
+    <button id="apiModalCloseBtn"></button>
+    <button id="apiModalDismissBtn"></button>
+    <button id="aiImportTasksBtn"></button>
+    <p id="aiExplanationSummary"></p>
+    <p id="aiExplanationAnalogy"></p>
+    <ul id="aiExplanationKeyPoints"></ul>
+    <p id="aiPlanSummarySubtitle"></p>
+    <div id="aiPlanTimeline"></div>
+    <div id="aiQuestionsList"></div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      const resultsDiv = document.getElementById('results');
+      const testReport = [];
+      let passed = 0;
+      let failed = 0;
+
+      function assert(desc, condition) {
+        if (condition) {
+          passed++;
+          testReport.push(`<span class="pass-line">&#x2714; [PASS]</span> ${desc}`);
+          console.log(`[PASS] ${desc}`);
+        } else {
+          failed++;
+          testReport.push(`<span class="fail-line">&#x2718; [FAIL]</span> ${desc}`);
+          console.error(`[FAIL] ${desc}`);
+        }
+      }
+
+      try {
+        // Clear state
+        localStorage.clear();
+        tasks = [];
+
+        // 1. Date utilities
+        const parsed = parseDateOnly('2026-10-25');
+        assert('parseDateOnly parses year, month, day correctly', 
+          parsed.getFullYear() === 2026 && parsed.getMonth() === 9 && parsed.getDate() === 25);
+
+        const today = getTodayDateOnly();
+        const yStr = formatDateToInputString(today);
+        assert('formatDateToInputString formats valid YYYY-MM-DD', /^\d{4}-\d{2}-\d{2}$/.test(yStr));
+
+        // 2. Overdue logic
+        assert('Task due in past and uncompleted is overdue', isTaskOverdue('2020-01-01', false) === true);
+        assert('Task due in past but completed is NOT overdue', isTaskOverdue('2020-01-01', true) === false);
+        assert('Task due in future and uncompleted is NOT overdue', isTaskOverdue('2099-01-01', false) === false);
+
+        // 3. Validation & creation
+        taskTitleInput.value = '';
+        taskSubjectInput.value = '';
+        taskDueDateInput.value = '';
+        handleAddTask(new Event('submit'));
+        assert('Empty title triggers validation error', titleError.textContent.length > 0);
+        assert('Empty subject triggers validation error', subjectError.textContent.length > 0);
+        assert('Empty date triggers validation error', dateError.textContent.length > 0);
+        assert('No tasks created on invalid submission', tasks.length === 0);
+
+        // Valid task
+        taskTitleInput.value = 'Complete Algorithms Assignment';
+        taskSubjectInput.value = 'Computer Science';
+        taskDueDateInput.value = '2026-10-24';
+        taskPriorityInput.value = 'high';
+        handleAddTask(new Event('submit'));
+
+        assert('Valid task added to tasks state', tasks.length === 1);
+        assert('Task has correct title property', tasks[0].title === 'Complete Algorithms Assignment');
+        assert('Task has correct priority property', tasks[0].priority === 'high');
+        assert('Task defaults to completed: false', tasks[0].completed === false);
+
+        // 4. Persistence
+        const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        assert('Task serialized and saved to localStorage', Array.isArray(stored) && stored.length === 1);
+        assert('Stored task ID matches state task ID', stored[0].id === tasks[0].id);
+
+        // 5. Toggle completion
+        const taskId = tasks[0].id;
+        toggleTaskCompletion(taskId);
+        assert('Task marked completed after toggle', tasks[0].completed === true);
+        assert('Completion persisted in localStorage', JSON.parse(localStorage.getItem(STORAGE_KEY))[0].completed === true);
+
+        toggleTaskCompletion(taskId);
+        assert('Task unmarked after second toggle', tasks[0].completed === false);
+
+        // 6. Sample task generator
+        loadSampleTasks();
+        assert('Sample tasks loaded (contains >= 5 tasks)', tasks.length >= 5);
+        const storedSamples = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        assert('Sample tasks persisted in localStorage', storedSamples.length >= 5);
+
+        // 7. Statistics calculation
+        updateStatistics();
+        const total = parseInt(totalTasksCount.textContent, 10);
+        const pending = parseInt(pendingTasksCount.textContent, 10);
+        const completed = parseInt(completedTasksCount.textContent, 10);
+        const overdue = parseInt(overdueTasksCount.textContent, 10);
+        assert('Total count matches tasks length', total === tasks.length);
+        assert('Total equals pending + completed count', total === (pending + completed));
+        assert('Overdue tasks detected and counted', overdue >= 1);
+
+        // 8. Filtering
+        currentFilter = 'pending';
+        const pendingList = getFilteredAndSortedTasks();
+        assert('Pending filter returns only incomplete tasks', pendingList.every(t => !t.completed));
+
+        currentFilter = 'completed';
+        const completedList = getFilteredAndSortedTasks();
+        assert('Completed filter returns only completed tasks', completedList.every(t => t.completed));
+        currentFilter = 'all';
+
+        // 9. Search filter
+        searchQuery = 'Dijkstra';
+        const searchResults = getFilteredAndSortedTasks();
+        assert('Search finds task by keyword "Dijkstra"', searchResults.length >= 1 && searchResults[0].title.includes('Dijkstra'));
+        searchQuery = '';
+
+        // 10. Sorting
+        currentSort = 'priority-desc';
+        const sortedByPriority = getFilteredAndSortedTasks();
+        const pWeights = { high: 3, medium: 2, low: 1 };
+        let isSortedCorrectly = true;
+        for (let i = 0; i < sortedByPriority.length - 1; i++) {
+          if (pWeights[sortedByPriority[i].priority] < pWeights[sortedByPriority[i + 1].priority]) {
+            isSortedCorrectly = false;
+            break;
+          }
+        }
+        assert('Sorting by priority (High to Low) is accurate', isSortedCorrectly);
+
+        // 11. Modal deletion
+        const taskToDelete = tasks[0];
+        promptDeleteTask(taskToDelete.id);
+        assert('Delete modal opened and target ID tracked', taskToDeleteId === taskToDelete.id);
+        confirmDeleteTask();
+        assert('Task removed from array after deletion confirmation', tasks.find(t => t.id === taskToDelete.id) === undefined);
+
+        // 12. Empty state
+        tasks = [];
+        saveTasksToStorage();
+        renderApp();
+        assert('Empty state container displayed when tasks array is empty', emptyState.style.display === 'flex');
+        assert('Task list container hidden when tasks array is empty', taskList.style.display === 'none');
+
+        // 13. AI View Switcher
+        switchView('assistant');
+        assert('switchView("assistant") displays assistant view', assistantView.style.display === 'block');
+        assert('switchView("assistant") hides planner view', plannerView.style.display === 'none');
+
+        switchView('planner');
+        assert('switchView("planner") displays planner view', plannerView.style.display === 'block');
+        assert('switchView("planner") hides assistant view', assistantView.style.display === 'none');
+
+        // 14. AI Study Curriculum Generator
+        const aiSample = generateClientFallbackCurriculum('Binary Search Trees', 60, 'Intermediate');
+        assert('Curriculum generator produces valid topic', aiSample.topic === 'Binary Search Trees');
+        assert('Curriculum generator creates explanation with summary and analogy', 
+          aiSample.explanation.summary.length > 0 && aiSample.explanation.analogy.length > 0);
+        assert('Curriculum generator creates exactly 5 practice questions', aiSample.practiceQuestions.length === 5);
+
+        const totalPlanTime = aiSample.studyPlan.reduce((acc, p) => acc + p.durationMinutes, 0);
+        assert('Study plan phase durations sum up to available time (60 mins)', totalPlanTime === 60);
+
+        // 15. Import Study Milestones to Planner
+        currentGeneratedPlan = aiSample;
+        const initialTaskCount = tasks.length;
+        handleImportStudyPlanToTasks();
+        assert('handleImportStudyPlanToTasks imports milestones into task manager', tasks.length === initialTaskCount + aiSample.studyPlan.length);
+        assert('Imported tasks saved to localStorage', JSON.parse(localStorage.getItem(STORAGE_KEY)).length === tasks.length);
+        assert('Imported tasks switch view back to planner', plannerView.style.display === 'block');
+
+      } catch (err) {
+        failed++;
+        testReport.push(`<span class="fail-line">&#x2718; [EXCEPTION]</span> ${err.message}`);
+      }
+
+      resultsDiv.innerHTML = `
+        <div style="margin-bottom: 1rem;">
+          <span class="badge ${failed === 0 ? 'badge-success' : 'badge-danger'}">
+            ${passed} Passed, ${failed} Failed
+          </span>
+        </div>
+        <pre>${testReport.join('\n')}</pre>
+      `;
+    });
+  </script>
+</body>
+</html>

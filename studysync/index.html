@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="StudySync - Smart Student Planner. Manage tasks, track deadlines, and conquer your semester.">
+  <title>StudySync &mdash; Smart Student Planner</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234f46e5'><path d='M22 10v6M2 10l10-5 10 5-10 5z'/><path d='M6 12v5c3 3 9 3 12 0v-5'/></svg>">
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Fonts: Inter for crisp, modern typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Header / Navigation -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <!-- Graduation Cap / Book Icon -->
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"></path>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">StudySync</h1>
+          <p class="brand-subtitle">Smart Student Planner</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <span id="currentDateDisplay" class="date-badge" title="Today's Date"></span>
+        <button id="loadSampleBtn" class="btn btn-secondary" title="Load sample student tasks to explore features">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          <span>Load Sample Tasks</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Layout -->
+  <main class="dashboard-container">
+    <!-- View Switcher Navigation Tabs -->
+    <nav class="view-nav" aria-label="StudySync Navigation Tabs">
+      <button id="viewPlannerBtn" class="view-nav-btn active" data-view="planner">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+        <span>Task Planner</span>
+      </button>
+
+      <button id="viewAssistantBtn" class="view-nav-btn" data-view="assistant">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+        </svg>
+        <span>AI Study Assistant</span>
+        <span class="view-badge-new">✨ AI</span>
+      </button>
+    </nav>
+
+    <!-- VIEW 1: Task Planner View -->
+    <div id="plannerView" class="view-section active">
+      <!-- Quick Stats Bar -->
+      <section class="stats-grid" aria-label="Task Statistics Summary">
+      <!-- Total Tasks Card -->
+      <article class="stat-card">
+        <div class="stat-icon stat-icon-primary" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+        </div>
+        <div class="stat-details">
+          <span class="stat-label">Total Tasks</span>
+          <span id="totalTasksCount" class="stat-number">0</span>
+        </div>
+      </article>
+
+      <!-- Pending Tasks Card -->
+      <article class="stat-card">
+        <div class="stat-icon stat-icon-warning" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <div class="stat-details">
+          <span class="stat-label">Pending</span>
+          <span id="pendingTasksCount" class="stat-number">0</span>
+        </div>
+      </article>
+
+      <!-- Completed Tasks Card -->
+      <article class="stat-card">
+        <div class="stat-icon stat-icon-success" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <div class="stat-details">
+          <span class="stat-label">Completed</span>
+          <span id="completedTasksCount" class="stat-number">0</span>
+        </div>
+      </article>
+
+      <!-- Overdue Tasks Card -->
+      <article class="stat-card" id="overdueCard">
+        <div class="stat-icon stat-icon-danger" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+        </div>
+        <div class="stat-details">
+          <span class="stat-label">Overdue</span>
+          <span id="overdueTasksCount" class="stat-number">0</span>
+        </div>
+      </article>
+    </section>
+
+    <!-- Progress Bar Tracker -->
+    <section class="progress-section" aria-label="Semester Progress">
+      <div class="progress-header">
+        <span class="progress-title">Completion Rate</span>
+        <span id="progressPercentage" class="progress-pct">0%</span>
+      </div>
+      <div class="progress-track" role="progressbar" id="progressBar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+        <div id="progressFill" class="progress-fill" style="width: 0%;"></div>
+      </div>
+    </section>
+
+    <!-- Two-Column Workspace Layout -->
+    <div class="content-grid">
+      <!-- Left Column: Add Task Form -->
+      <aside class="sidebar-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Add New Task
+          </h2>
+          <p class="card-subtitle">Keep track of your coursework, assignments & exams</p>
+        </div>
+
+        <form id="taskForm" class="task-form" novalidate>
+          <!-- Task Title Input -->
+          <div class="form-group">
+            <label for="taskTitle" class="form-label">Task Title <span class="required-star">*</span></label>
+            <input 
+              type="text" 
+              id="taskTitle" 
+              class="form-control" 
+              placeholder="e.g. Implement Dijkstra's Algorithm" 
+              maxlength="100" 
+              required
+              autocomplete="off"
+            >
+            <div id="titleError" class="input-error" role="alert" aria-live="assertive"></div>
+          </div>
+
+          <!-- Subject Selection -->
+          <div class="form-group">
+            <label for="taskSubject" class="form-label">Subject / Course <span class="required-star">*</span></label>
+            <input 
+              type="text" 
+              id="taskSubject" 
+              list="commonSubjects" 
+              class="form-control" 
+              placeholder="e.g. Computer Science" 
+              maxlength="50" 
+              required
+              autocomplete="off"
+            >
+            <datalist id="commonSubjects">
+              <option value="Computer Science"></option>
+              <option value="Data Science & AI"></option>
+              <option value="Algorithms & Data Structures"></option>
+              <option value="Database Systems"></option>
+              <option value="Calculus & Linear Algebra"></option>
+              <option value="Probability & Statistics"></option>
+              <option value="Software Engineering"></option>
+              <option value="Web Development"></option>
+            </datalist>
+            <div id="subjectError" class="input-error" role="alert" aria-live="assertive"></div>
+          </div>
+
+          <!-- Due Date & Priority Grid -->
+          <div class="form-row">
+            <!-- Due Date Input -->
+            <div class="form-group">
+              <label for="taskDueDate" class="form-label">Due Date <span class="required-star">*</span></label>
+              <input 
+                type="date" 
+                id="taskDueDate" 
+                class="form-control" 
+                required
+              >
+              <div id="dateError" class="input-error" role="alert" aria-live="assertive"></div>
+            </div>
+
+            <!-- Priority Dropdown -->
+            <div class="form-group">
+              <label for="taskPriority" class="form-label">Priority <span class="required-star">*</span></label>
+              <select id="taskPriority" class="form-control" required>
+                <option value="low">🟢 Low</option>
+                <option value="medium" selected>🟡 Medium</option>
+                <option value="high">🔴 High</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" id="submitTaskBtn" class="btn btn-primary btn-block">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            <span>Add to Study Planner</span>
+          </button>
+        </form>
+      </aside>
+
+      <!-- Right Column: Task List & Controls -->
+      <section class="tasks-section" aria-label="Student Task List">
+        <!-- Filter and Search Toolbar -->
+        <div class="toolbar">
+          <!-- Filter Tabs -->
+          <div class="filter-tabs" role="tablist" aria-label="Task Status Filters">
+            <button class="filter-tab active" data-filter="all" role="tab" aria-selected="true">
+              All <span class="badge" id="filterCountAll">0</span>
+            </button>
+            <button class="filter-tab" data-filter="pending" role="tab" aria-selected="false">
+              Pending <span class="badge" id="filterCountPending">0</span>
+            </button>
+            <button class="filter-tab" data-filter="completed" role="tab" aria-selected="false">
+              Completed <span class="badge" id="filterCountCompleted">0</span>
+            </button>
+          </div>
+
+          <!-- Search and Sort Bar -->
+          <div class="toolbar-controls">
+            <!-- Search Input -->
+            <div class="search-box">
+              <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input 
+                type="text" 
+                id="searchInput" 
+                class="search-input" 
+                placeholder="Search title or subject..." 
+                aria-label="Search tasks"
+              >
+              <button id="clearSearchBtn" class="clear-search-btn" aria-label="Clear search query" style="display: none;">&times;</button>
+            </div>
+
+            <!-- Sort Select -->
+            <div class="sort-box">
+              <label for="sortSelect" class="sr-only">Sort Tasks By</label>
+              <select id="sortSelect" class="form-control sort-select" title="Sort Tasks">
+                <option value="due-asc">Due Date (Earliest)</option>
+                <option value="due-desc">Due Date (Latest)</option>
+                <option value="priority-desc">Priority (High to Low)</option>
+                <option value="title-asc">Title (A to Z)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Task List Container -->
+        <ul id="taskList" class="task-list" role="list">
+          <!-- Dynamically populated via JavaScript -->
+        </ul>
+
+        <!-- Empty State Container (Displayed when no tasks match) -->
+        <div id="emptyState" class="empty-state" style="display: none;">
+          <div class="empty-state-icon" aria-hidden="true">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+            </svg>
+          </div>
+          <h3 id="emptyStateTitle" class="empty-state-title">No tasks found!</h3>
+          <p id="emptyStateText" class="empty-state-text">Your study planner is clear. Add an assignment or study goal on the left to stay ahead!</p>
+          <button id="emptyStateActionBtn" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+            <span>Load Quick Demo Tasks</span>
+          </button>
+        </div>
+
+        <!-- Danger Zone / Cleanup Actions -->
+        <div class="cleanup-actions">
+          <button id="clearCompletedBtn" class="btn-text btn-text-danger" title="Remove all completed tasks">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span>Clear Completed Tasks</span>
+          </button>
+        </div>
+      </section>
+    </div>
+    </div> <!-- /#plannerView -->
+
+    <!-- VIEW 2: AI Study Assistant View -->
+    <div id="assistantView" class="view-section" style="display: none;">
+      <!-- Assistant Header / Hero -->
+      <section class="assistant-hero">
+        <div class="assistant-hero-content">
+          <div class="assistant-hero-title-row">
+            <h2 class="assistant-title">
+              <span class="gradient-text">AI Study Assistant</span>
+            </h2>
+            <div id="aiStatusBadge" class="ai-status-badge ai-status-loading">
+              <span class="status-dot"></span>
+              <span id="aiStatusText">Checking AI status...</span>
+            </div>
+          </div>
+          <p class="assistant-subtitle">
+            Enter a topic, available study time, and difficulty level. The assistant generates a prioritized study breakdown, a plain-English explanation, and 5 self-check practice questions.
+          </p>
+          <div class="assistant-mode-bar">
+            <span id="aiModeNotice" class="mode-notice">
+              <!-- Dynamically populated via script.js -->
+            </span>
+            <button id="openApiHelpBtn" class="btn-text btn-text-info" type="button">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span>How to connect Gemini API</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Input Form Card -->
+      <section class="assistant-input-card">
+        <form id="aiPlanForm" class="ai-form" novalidate>
+          <div class="ai-form-grid">
+            <!-- 1. Topic Input -->
+            <div class="form-group ai-form-col-2">
+              <label for="aiTopicInput" class="form-label">
+                Subject or Topic to Study <span class="required-star">*</span>
+              </label>
+              <input 
+                type="text" 
+                id="aiTopicInput" 
+                class="form-control" 
+                placeholder="e.g. Binary Search Trees, Dijkstra's Algorithm, SQL Joins, or Linear Regression" 
+                maxlength="100" 
+                required
+                autocomplete="off"
+              >
+              <div id="aiTopicError" class="input-error" role="alert" aria-live="assertive"></div>
+              
+              <!-- Quick Suggestions -->
+              <div class="topic-suggestions">
+                <span class="suggestion-label">Quick topics:</span>
+                <button type="button" class="chip-btn" data-topic="Binary Search Trees">Binary Search Trees</button>
+                <button type="button" class="chip-btn" data-topic="Dijkstra's Algorithm">Dijkstra's Algorithm</button>
+                <button type="button" class="chip-btn" data-topic="SQL Joins & Group By">SQL Joins</button>
+                <button type="button" class="chip-btn" data-topic="Linear Regression">Linear Regression</button>
+                <button type="button" class="chip-btn" data-topic="Integration by Parts">Integration by Parts</button>
+              </div>
+            </div>
+
+            <!-- 2. Available Time Input -->
+            <div class="form-group">
+              <label for="aiTimeInput" class="form-label">
+                Available Study Time (Minutes) <span class="required-star">*</span>
+              </label>
+              <input 
+                type="number" 
+                id="aiTimeInput" 
+                class="form-control" 
+                min="10" 
+                max="300" 
+                step="5" 
+                value="45" 
+                required
+              >
+              <div id="aiTimeError" class="input-error" role="alert" aria-live="assertive"></div>
+              
+              <!-- Quick Time Pills -->
+              <div class="time-pills">
+                <button type="button" class="time-pill-btn" data-mins="15">15m</button>
+                <button type="button" class="time-pill-btn" data-mins="30">30m</button>
+                <button type="button" class="time-pill-btn active" data-mins="45">45m</button>
+                <button type="button" class="time-pill-btn" data-mins="60">60m</button>
+                <button type="button" class="time-pill-btn" data-mins="90">90m</button>
+              </div>
+            </div>
+
+            <!-- 3. Difficulty Level -->
+            <div class="form-group">
+              <label for="aiDifficultySelect" class="form-label">
+                Difficulty Level <span class="required-star">*</span>
+              </label>
+              <select id="aiDifficultySelect" class="form-control" required>
+                <option value="Beginner">🟢 Beginner (Foundations & Intuition)</option>
+                <option value="Intermediate" selected>🟡 Intermediate (Mechanics & Edge Cases)</option>
+                <option value="Advanced">🔴 Advanced (Proof, Theory & Optimization)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="ai-submit-row">
+            <button type="submit" id="aiGenerateBtn" class="btn btn-primary btn-lg">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              <span id="aiBtnText">Generate Study Plan & Practice</span>
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Loading State -->
+      <div id="aiLoadingSkeleton" class="ai-loading" style="display: none;">
+        <div class="ai-spinner" aria-hidden="true"></div>
+        <p class="ai-loading-text">Analyzing topic and structuring your customized study session...</p>
+      </div>
+
+      <!-- Results Display Container -->
+      <div id="aiResultsContainer" class="ai-results-container" style="display: none;">
+        <!-- Banner Tag for Generated Mode -->
+        <div id="aiSourceBanner" class="ai-source-banner"></div>
+
+        <!-- 1. Topic Explanation Section -->
+        <article class="ai-result-card" aria-label="Topic Explanation">
+          <div class="ai-card-header">
+            <div class="ai-card-icon icon-explanation">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+            </div>
+            <div>
+              <h3 class="ai-card-title">Simple Topic Explanation</h3>
+              <p class="ai-card-subtitle">Intuition, real-world analogy, and core takeaways</p>
+            </div>
+          </div>
+          <div class="ai-card-body">
+            <p id="aiExplanationSummary" class="explanation-summary"></p>
+            
+            <div class="analogy-box">
+              <span class="analogy-label">💡 Real-World Analogy:</span>
+              <p id="aiExplanationAnalogy" class="analogy-text"></p>
+            </div>
+
+            <div class="keypoints-box">
+              <h4 class="keypoints-title">Core Takeaways:</h4>
+              <ul id="aiExplanationKeyPoints" class="keypoints-list"></ul>
+            </div>
+          </div>
+        </article>
+
+        <!-- 2. Prioritized Study Plan Section -->
+        <article class="ai-result-card" aria-label="Prioritized Study Plan">
+          <div class="ai-card-header ai-card-header-flex">
+            <div class="ai-card-header-left">
+              <div class="ai-card-icon icon-plan">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+              </div>
+              <div>
+                <h3 class="ai-card-title">Prioritized Study Breakdown</h3>
+                <p class="ai-card-subtitle" id="aiPlanSummarySubtitle">Time-blocked study phases totaling your available time</p>
+              </div>
+            </div>
+            <button id="aiImportTasksBtn" class="btn btn-secondary btn-sm" title="Convert study milestones into tasks in your StudySync planner">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+              <span>Add Milestones to Planner</span>
+            </button>
+          </div>
+          <div class="ai-card-body">
+            <div id="aiPlanTimeline" class="plan-timeline"></div>
+          </div>
+        </article>
+
+        <!-- 3. Five Practice Questions Section -->
+        <article class="ai-result-card" aria-label="Practice Questions">
+          <div class="ai-card-header">
+            <div class="ai-card-icon icon-practice">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+            </div>
+            <div>
+              <h3 class="ai-card-title">Five Practice Questions</h3>
+              <p class="ai-card-subtitle">Self-check diagnostic questions with expandable answers</p>
+            </div>
+          </div>
+          <div class="ai-card-body">
+            <div id="aiQuestionsList" class="questions-list"></div>
+          </div>
+        </article>
+      </div>
+    </div> <!-- /#assistantView -->
+  </main>
+
+  <!-- Toast Notification System -->
+  <div id="toastContainer" class="toast-container" aria-live="polite"></div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="deleteModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modalTitle" class="modal-title">Confirm Deletion</h3>
+        <button id="modalCloseBtn" class="modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <p class="modal-body" id="modalMessage">Are you sure you want to delete this task? This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button id="modalCancelBtn" class="btn btn-secondary">Cancel</button>
+        <button id="modalConfirmBtn" class="btn btn-danger">Delete Task</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Configuration Help Modal -->
+  <div id="apiHelpModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="apiModalTitle" style="display: none;">
+    <div class="modal-card modal-card-wide">
+      <div class="modal-header">
+        <h3 id="apiModalTitle" class="modal-title">Configure Live Google Gemini AI</h3>
+        <button id="apiModalCloseBtn" class="modal-close" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body api-help-content">
+        <p>StudySync protects your credentials by <strong>never storing or exposing API keys in frontend code</strong>. The local Python backend (<code>server.py</code>) reads your key from the environment securely.</p>
+
+        <ol class="api-steps-list">
+          <li>
+            <strong>Get a Free Google Gemini API Key:</strong><br>
+            Visit <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Google AI Studio</a> and click <em>"Create API Key"</em>.
+          </li>
+          <li>
+            <strong>Option A &mdash; Using a .env file (Recommended):</strong><br>
+            In your <code>studysync</code> folder, create a file named <code>.env</code> with:
+            <pre><code>GEMINI_API_KEY=your_actual_key_here</code></pre>
+            <em>(You can copy from <code>.env.example</code> already in your folder.)</em>
+          </li>
+          <li>
+            <strong>Option B &mdash; Setting Environment Variable in PowerShell:</strong><br>
+            <pre><code>$env:GEMINI_API_KEY="your_actual_key_here"</code></pre>
+          </li>
+          <li>
+            <strong>Start the Server:</strong><br>
+            <pre><code>python server.py</code></pre>
+          </li>
+        </ol>
+
+        <div class="api-notice-box">
+          <strong>🔒 Security Guarantee:</strong> The frontend code communicates only with your local server endpoint (<code>/api/generate-study-plan</code>). Your secret API key is never exposed to the browser or DevTools.
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="apiModalDismissBtn" class="btn btn-primary">Understood</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <p>StudySync &bull; Built with Vanilla HTML, CSS &amp; JavaScript &bull; All data stays safely in your browser (localStorage)</p>
+    </div>
+  </footer>
+
+  <!-- Main JavaScript File -->
+  <script src="script.js"></script>
+</body>
+</html>
